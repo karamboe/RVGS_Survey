@@ -1,0 +1,62 @@
+﻿@using Survey.Shared
+
+@if (Model != null)
+{
+    <EditForm Model="@Model" OnSubmit="@FormSubmitted">        
+        <Fields Class="clearfix">
+            <Field ColumnSize="ColumnSize.IsAuto">
+                <FieldLabel Class="required">Beskrivelse</FieldLabel>
+                <TextEdit @bind-Text="Model.Description" Placeholder="Beskrivelse" />
+            </Field>
+
+            <Field ColumnSize="ColumnSize.IsAuto">
+                <FieldLabel Class="required">Kategori</FieldLabel>
+                <TextEdit @bind-Text="Model.Category" Placeholder="Kategori" />
+            </Field>
+
+            <Field ColumnSize="ColumnSize.IsAuto">
+                <FieldLabel Class="required">Beskrivelse</FieldLabel>
+                <TextEdit @bind-Text="Model.Description" Placeholder="Beskrivelse" />
+                <DateEdit TValue="DateTime" @bind-Date="Model.InsertedDate" />
+            </Field>
+           
+            <Field ColumnSize="ColumnSize.IsAuto" Class="align-bottom">
+                <br />
+                @*<Button Color="Color.Success" Type="ButtonType.Submit" Disabled="@(!context.Validate())" Class="align-bottom">@localizer["Save"]</Button>*@
+                <Button Color="Color.Success" Type="ButtonType.Submit" Class="align-bottom">Lagre</Button>
+            </Field>
+            <Field ColumnSize="ColumnSize.IsAuto" Class="align-bottom">
+                <br />
+                <Button Type="ButtonType.Button" Color="Color.Light" Clicked="OnCancel">Avbryt</Button>
+            </Field>
+        </Fields>
+        <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
+    </EditForm>
+}
+
+@code {
+    
+    [Parameter] public SurveyDto Model { get; set; }
+    [Parameter] public EventCallback<SurveyDto> OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task FormSubmitted(EditContext context)
+    {
+        if (context.Validate())
+        {
+            await OnSave.InvokeAsync(Model);
+        }
+    }
+
+    private async Task Save(EditContext context)
+    {
+        await OnSave.InvokeAsync(Model);
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+
+}

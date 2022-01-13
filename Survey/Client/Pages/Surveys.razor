@@ -1,0 +1,111 @@
+﻿@page "/surveys"
+@using Survey.Client.Services
+@using Survey.Shared
+@inject HttpClient Http
+
+<PageTitle>Surveys</PageTitle>
+
+<h1>Undersøkelser</h1>
+
+<p>Her er undersøkelser som du kan se og svar på</p>
+
+@if (!isInitialized)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+        @if (!showEdit)
+        {
+            <Survey.Client.Components.SurveyList Data="surveys" OnEdit="OnEdit" OnDelete="OnDelete" />
+            <Button Clicked="@OnAdd" Color="Color.Primary">Legg til</Button>
+        }
+        else
+        {
+            <Jumbotron Class="container" Margin="Margin.Is4.FromBottom">
+                <JumbotronTitle Size="JumbotronTitleSize.Is4">@editHeader</JumbotronTitle>
+                <Divider></Divider>
+                <Survey.Client.Components.SurveyEdit Model="@selectedSurvey" OnSave="@OnSave" OnCancel="OnCancel" />
+            </Jumbotron>
+        }
+    </div>
+}
+
+@code
+{
+    private bool isInitialized;
+    private bool showEdit;
+    private string editHeader;
+
+    private IEnumerable<SurveyDto> surveys;
+    private SurveyDto selectedSurvey { get; set; }
+
+    [Inject] private ISurveyService DataService { get; set; }
+    [Inject] private INotificationService NotificationService { get; set; }
+    [Inject] private IMessageService MessageService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ListSurveys();
+        isInitialized = true;
+    }
+
+    private async Task ListSurveys()
+    {
+        surveys = await DataService.List();
+    }
+
+    void OnAdd()
+    {
+        //selectedSurvey = new SurveyDto();
+        selectedSurvey = new SurveyDto
+        {
+            Id = "",
+            Description = "",
+            Category = "",
+            Deleted = false,
+            InsertedDate = DateTime.MinValue,
+            InsertedBy = "",
+            UpdatedDate = DateTime.MinValue,
+            UpdatedBy = "",
+            UpdateCount = 0
+        };
+        showEdit = true;
+    }
+
+    async Task OnEdit(string id)
+    {
+        selectedSurvey = await DataService.GetById(id);
+        showEdit = true;
+    }
+
+    async Task OnDelete(string id)
+    {
+        await DataService.Delete(id);
+    }
+
+    async Task OnSave()
+    {
+        selectedSurvey.UpdatedBy = "KBO";
+        if (await DataService.Save(selectedSurvey))
+        {
+            await NotificationService.Success("Undersøkelsen ble vellykket lagert!", "Lagring gikk fint!");
+
+            showEdit = false;
+            selectedSurvey = new SurveyDto { };
+            await ListSurveys();
+        }
+        else
+        {
+            await MessageService.Error("Kunne ikke lagre undersøkelse!", "Feil ved lagring av undersøkelse");
+            //await NotificationService.Error("Kunne ikke lagre undersøkelse!", "Feil ved lagring av undersøkelse");
+        }
+    }
+
+    void OnCancel()
+    {
+        showEdit = false;
+    }
+
+}
