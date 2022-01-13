@@ -56,8 +56,9 @@ else
         surveys = await DataService.List();
     }
 
-    void OnAdd()
+    private void OnAdd()
     {
+        editHeader = "Ny undersøkelse";
         //selectedSurvey = new SurveyDto();
         selectedSurvey = new SurveyDto
         {
@@ -74,18 +75,30 @@ else
         showEdit = true;
     }
 
-    async Task OnEdit(string id)
+    private async Task OnEdit(string id)
     {
+        editHeader = "Endre undersøksel";
         selectedSurvey = await DataService.GetById(id);
         showEdit = true;
     }
 
-    async Task OnDelete(string id)
+    private async Task OnDelete(string id)
     {
-        await DataService.Delete(id);
+        if(await DataService.Delete(id))
+        {
+            await NotificationService.Success("Undersøkelsen ble vellykket slettet!", "Sletting gikk fint!");
+            showEdit = false;
+            selectedSurvey = null;
+
+            await ListSurveys();
+        }
+        else
+        {
+            await MessageService.Error("Kunne ikke slette undersøkelse!", "Feil ved sletting av undersøkelse");
+        }
     }
 
-    async Task OnSave()
+    private async Task OnSave()
     {
         selectedSurvey.UpdatedBy = "KBO";
         if (await DataService.Save(selectedSurvey))
@@ -103,7 +116,7 @@ else
         }
     }
 
-    void OnCancel()
+    private void OnCancel()
     {
         showEdit = false;
     }

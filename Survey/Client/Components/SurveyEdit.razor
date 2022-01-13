@@ -5,19 +5,23 @@
     <EditForm Model="@Model" OnSubmit="@FormSubmitted">        
         <Fields Class="clearfix">
             <Field ColumnSize="ColumnSize.IsAuto">
-                <FieldLabel Class="required">Beskrivelse</FieldLabel>
+                <FieldLabel Class="required">Beskrivelse:</FieldLabel>
                 <TextEdit @bind-Text="Model.Description" Placeholder="Beskrivelse" />
             </Field>
 
             <Field ColumnSize="ColumnSize.IsAuto">
-                <FieldLabel Class="required">Kategori</FieldLabel>
+                <FieldLabel Class="required">Kategori:</FieldLabel>
                 <TextEdit @bind-Text="Model.Category" Placeholder="Kategori" />
             </Field>
 
             <Field ColumnSize="ColumnSize.IsAuto">
-                <FieldLabel Class="required">Beskrivelse</FieldLabel>
-                <TextEdit @bind-Text="Model.Description" Placeholder="Beskrivelse" />
+                <FieldLabel Class="required">Opprettet dato:</FieldLabel>                
                 <DateEdit TValue="DateTime" @bind-Date="Model.InsertedDate" />
+            </Field>
+
+            <Field ColumnSize="ColumnSize.IsAuto">
+                <FieldLabel Class="required">Opprettet av:</FieldLabel>                
+                <TextEdit @bind-Text="Model.InsertedBy" Placeholder="Opprette av" />
             </Field>
            
             <Field ColumnSize="ColumnSize.IsAuto" Class="align-bottom">
