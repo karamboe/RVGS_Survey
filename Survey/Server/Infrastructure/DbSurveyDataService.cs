@@ -5,7 +5,6 @@ using Survey.Shared.Models;
 using System.Data;
 using System.Text;
 using System;
-using Survey.Shared.Exceptions;
 
 namespace Survey.Server.Infrastructure
 {
@@ -106,9 +105,9 @@ FROM
                         });
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    throw new DatabaseException(ex.Message);
+                    throw;
                 }
             };
 
@@ -176,9 +175,9 @@ SET
                     }
                     
                 }
-                catch (Exception ex)
+                catch
                 {
-                    throw new DatabaseException(ex.Message);
+                    throw;
                 }
             };
         }
@@ -205,9 +204,9 @@ DELETE FROM [dbo].[Survey]
 
                     return (res > 0);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    throw new DatabaseException(ex.Message);
+                    throw;
                 }
             };
         }

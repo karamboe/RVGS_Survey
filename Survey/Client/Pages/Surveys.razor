@@ -1,6 +1,5 @@
 ﻿@page "/surveys"
 @using Survey.Client.Services
-@using Survey.Shared.Exceptions
 @using Survey.Shared.Models
 @inject HttpClient Http
 
@@ -58,10 +57,6 @@ else
         {
             surveys = await DataService.List();            
         }        
-        catch(DatabaseException dbe)
-        {
-            await MessageService.Error($"Feil ved henting av undersøkelser: {dbe?.Message}");
-        }
         catch (Exception ex)
         {
             await MessageService.Error($"Feil ved henting av undersøkelser: {ex?.Message}");
