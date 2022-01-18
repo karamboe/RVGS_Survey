@@ -1,5 +1,5 @@
 ﻿
-using Survey.Shared;
+using Survey.Shared.Models;
 
 namespace Survey.Client.Services
 {

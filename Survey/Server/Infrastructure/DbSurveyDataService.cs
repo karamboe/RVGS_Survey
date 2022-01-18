@@ -1,10 +1,11 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using Survey.Server.Services;
-using Survey.Shared;
+using Survey.Shared.Models;
 using System.Data;
 using System.Text;
 using System;
+using Survey.Shared.Exceptions;
 
 namespace Survey.Server.Infrastructure
 {
@@ -57,9 +58,9 @@ FROM
                         };
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    return null;
+                    throw;
                 }
             };
 
@@ -107,7 +108,7 @@ FROM
                 }
                 catch (Exception ex)
                 {
-                    return null;
+                    throw new DatabaseException(ex.Message);
                 }
             };
 
@@ -177,7 +178,7 @@ SET
                 }
                 catch (Exception ex)
                 {
-                    return false;
+                    throw new DatabaseException(ex.Message);
                 }
             };
         }
@@ -206,7 +207,7 @@ DELETE FROM [dbo].[Survey]
                 }
                 catch (Exception ex)
                 {
-                    return false;
+                    throw new DatabaseException(ex.Message);
                 }
             };
         }
@@ -224,7 +225,6 @@ DELETE FROM [dbo].[Survey]
                 UpdatedDate = row.UpdatedDate,
                 UpdatedBy = row.UpdatedBy,
                 UpdateCount = row.UpdateCount,
-
             };
         }
     }

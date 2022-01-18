@@ -1,10 +1,6 @@
-﻿using Survey.Shared;
+﻿using Survey.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
-using RestSharp;
-using System.Text;
-using System.Xml;
 using Survey.Server.Services;
-using Microsoft.AspNetCore.Components;
 
 namespace Survey.Server.Controllers
 {
@@ -35,13 +31,12 @@ namespace Survey.Server.Controllers
 
                 return Ok(survs);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from the database");
+                logger.LogError($"Error in SurveyController.List(): {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
-
         }
-
 
         [HttpGet("{id:int}"), ActionName("GetById")]
         public async Task<ActionResult<SurveyDto>> GetById(string id)
@@ -57,9 +52,10 @@ namespace Survey.Server.Controllers
 
                 return result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from the database");
+                logger.LogError($"Error in SurveyController.GetById(): {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -73,9 +69,9 @@ namespace Survey.Server.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError, "Error updating database");
+                logger.LogError($"Error in SurveyController.Save(): {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }            
         }
 
         [HttpDelete("{id:int}")]
@@ -88,9 +84,9 @@ namespace Survey.Server.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError, "Error updating database");
+                logger.LogError($"Error in SurveyController.Delete(): {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }            
         }
 
 

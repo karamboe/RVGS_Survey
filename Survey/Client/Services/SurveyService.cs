@@ -1,76 +1,62 @@
-﻿using Survey.Shared;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using Survey.Shared.Models;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Survey.Client.Services
 {
     public class SurveyService : ISurveyService
     {
-        private readonly HttpClient client;
-        private readonly JsonSerializerOptions options;
+        private readonly HttpClient httpClient;
 
         public SurveyService(HttpClient httpClient)
         {
-            client = httpClient;
-            options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            this.httpClient = httpClient;
         }
 
         public async Task<bool> Delete(string id)
         {
-            var response = await client.DeleteAsync($"api/survey/{id}");
-            
+            var response = await httpClient.DeleteAsync($"api/survey/{id}");
+
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Success");
                 return true;
             }
             return false;
         }
 
         public async Task<SurveyDto> GetById(string id)
-        {            
+        {
             try
             {
-                return await client.GetFromJsonAsync<SurveyDto>($"api/survey/{id}");
+                return await httpClient.GetFromJsonAsync<SurveyDto>($"api/survey/{id}");
             }
             catch
             {
-                return null;
+                throw;
             }
         }
 
         public async Task<IEnumerable<SurveyDto>> List()
         {
-            try
-            {
-                return await client.GetFromJsonAsync<SurveyDto[]>($"api/survey");
-            }
-            catch
-            {
-                return Enumerable.Empty<SurveyDto>();      
-            }
+
+            return await httpClient.GetFromJsonAsync<IEnumerable<SurveyDto>>($"api/survey");
         }
 
         public async Task<bool> Save(SurveyDto item)
         {
             try
-            {                
-                var response = await client.PostAsJsonAsync<SurveyDto>($"api/survey", item);
+            {
+                var response = await httpClient.PostAsJsonAsync<SurveyDto>($"api/survey", item);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Success");
                     return true;
-                }                
+                }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
+                throw;
             }
             return false;
         }

@@ -20,10 +20,7 @@ namespace System
 
         public static int GetAge(this DateTime birthDate)
         {
-            var today = DateTime.Today;
-            var age = today.Year - birthDate.Year;
-            if (birthDate > today.AddYears(-age)) age--;
-            return age;
+            return GetAge(birthDate, DateTime.Now.Date);
         }
         public static int GetAge(this DateTime birthDate, DateTime toDate)
         {

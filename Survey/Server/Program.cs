@@ -3,16 +3,22 @@ using Survey.Server.Infrastructure;
 using Survey.Server.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Survey.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddRazorPages();
 
 // Map interfaces to db classes
 builder.Services.AddDbServices();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PolicyName", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+});
 
 var app = builder.Build();
 
