@@ -60,7 +60,7 @@ namespace Survey.Server.Controllers
         }
 
         [HttpPost()]
-        public async Task<ActionResult<bool>> Save([FromBody] SurveyDto item)
+        public async Task<ActionResult<bool>> Save(SurveyDto item)
         {
             try
             {

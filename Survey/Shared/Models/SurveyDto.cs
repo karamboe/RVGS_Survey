@@ -9,7 +9,6 @@ namespace Survey.Shared.Models
 {
     public class SurveyDto
     {
-        [Required]
         public string Id { get; set; }
         [Required]
         public string Description { get; set; }
@@ -28,6 +27,8 @@ namespace Survey.Shared.Models
 
         [Required] 
         public int UpdateCount { get; set; }
+
+
 
     }
 }
