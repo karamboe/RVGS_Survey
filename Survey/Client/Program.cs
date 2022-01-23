@@ -16,7 +16,8 @@ builder.Services
       })
       .AddBootstrapProviders()
       .AddFontAwesomeIcons()
-      .AddScoped<ISurveyService, SurveyService>();
+      .AddScoped<ISurveyService, SurveyService>()
+      .AddScoped<IQuestionService, QuestionService>();
 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");

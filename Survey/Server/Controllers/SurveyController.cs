@@ -5,11 +5,12 @@ using Survey.Server.Services;
 namespace Survey.Server.Controllers
 {
     [ApiController]
-    [Microsoft.AspNetCore.Mvc.Route("api/[controller]")]
+    [Route("api/[controller]")]
     public class SurveyController : ControllerBase
     {
         private readonly ILogger<SurveyController> logger;
         private ISurveyDataService surveyDataService { get; set; }
+        private IQuestionDataService questionDataService { get; set; }
 
         public SurveyController(ILogger<SurveyController> logger, ISurveyDataService surveyDataService)
         {
@@ -17,8 +18,8 @@ namespace Survey.Server.Controllers
             this.surveyDataService = surveyDataService;
         }
 
-        [HttpGet, ActionName("List")]
-        public async Task<ActionResult> List()
+        [HttpGet("ListSurveys")]      
+        public async Task<ActionResult> ListSurveys()
         {
             try
             {
@@ -38,8 +39,8 @@ namespace Survey.Server.Controllers
             }
         }
 
-        [HttpGet("{id:int}"), ActionName("GetById")]
-        public async Task<ActionResult<SurveyDto>> GetById(string id)
+        [HttpGet("GetSurveyById/{id}")]
+        public async Task<ActionResult<SurveyDto>> GetSurveyById(string id)
         {
             try
             {
@@ -59,8 +60,8 @@ namespace Survey.Server.Controllers
             }
         }
 
-        [HttpPost()]
-        public async Task<ActionResult<bool>> Save(SurveyDto item)
+        [HttpPost("SaveSurvey/{item}")]
+        public async Task<ActionResult<bool>> SaveSurvey(SurveyDto item)
         {
             try
             {
@@ -74,8 +75,8 @@ namespace Survey.Server.Controllers
             }            
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult<bool>> Delete(string id)
+        [HttpDelete("DeleteSurvey/{id}")]
+        public async Task<ActionResult<bool>> DeleteSurvey(string id)
         {
             try
             {

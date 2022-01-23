@@ -16,7 +16,7 @@ namespace Survey.Client.Services
 
         public async Task<bool> Delete(string id)
         {
-            var response = await httpClient.DeleteAsync($"api/survey/{id}");
+            var response = await httpClient.DeleteAsync($"api/Survey/DeleteSurvey/{id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -29,7 +29,7 @@ namespace Survey.Client.Services
         {
             try
             {
-                return await httpClient.GetFromJsonAsync<SurveyDto>($"api/survey/{id}");
+                return await httpClient.GetFromJsonAsync<SurveyDto>($"api/Survey/GetSurveyById/{id}");
             }
             catch
             {
@@ -40,14 +40,14 @@ namespace Survey.Client.Services
         public async Task<IEnumerable<SurveyDto>> List()
         {
 
-            return await httpClient.GetFromJsonAsync<IEnumerable<SurveyDto>>($"api/survey");
+            return await httpClient.GetFromJsonAsync<IEnumerable<SurveyDto>>($"api/Survey/ListSurveys");
         }
 
         public async Task<bool> Save(SurveyDto item)
         {
             try
             {
-                var response = await httpClient.PostAsJsonAsync<SurveyDto>($"api/survey", item);
+                var response = await httpClient.PostAsJsonAsync<SurveyDto>($"api/Survey/SaveSurvey/{item}", item);
 
                 if (response.IsSuccessStatusCode)
                 {

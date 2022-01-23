@@ -7,6 +7,7 @@ namespace Survey.Server.Infrastructure
     {
         public static IServiceCollection AddDbServices(this IServiceCollection services) =>
             services
-                .AddSingleton<ISurveyDataService, DbSurveyDataService>();
+                .AddSingleton<ISurveyDataService, DbSurveyDataService>()
+                .AddSingleton<IQuestionDataService, DbQuestionDataService>();
     }
 }

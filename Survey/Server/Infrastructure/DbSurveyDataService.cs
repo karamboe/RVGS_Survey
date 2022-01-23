@@ -34,8 +34,7 @@ FROM
 /**where**/
 ");
 
-                    builder.Where("Id = @Id", new { Id = id });
-
+                    builder.Where("Id = @Id", new { Id = id });                    
                     // /**orderby**/
                     //builder.OrderBy("Id, Category ASC");
 
@@ -153,11 +152,13 @@ SET
     InsertedDate = @InsertedDate, 
     InsertedBy = @InsertedBy, 
     UpdatedDate = @UpdatedDate, 
-    UpdatedBy = @UpdatedBy
+    UpdatedBy = @UpdatedBy,
+    UpdateCount = UpdateCount + 1
 /**where**/
 ");
                         builder.Where("Id = @Id", new { Id = survey.Id });
-                        
+                        builder.Where("UpdateCount = @UpdateCount", new { UpdateCount = survey.UpdateCount });
+
                         var parameters = new
                         {
                             Description = !string.IsNullOrWhiteSpace(survey.Description) ? survey.Description : string.Empty,
@@ -165,7 +166,7 @@ SET
                             InsertedDate = survey.InsertedDate != DateTime.MinValue ? survey.InsertedDate.ToDbDateString() : string.Empty,
                             InsertedBy = !string.IsNullOrWhiteSpace(survey.InsertedBy) ? survey.InsertedBy : string.Empty,
                             UpdatedDate = DateTime.Now.ToDbDateString(),
-                            UpdatedBy = "KBO"
+                            UpdatedBy = "KBO" //Should come from authorization
                         };
 
                         builder.AddParameters(parameters);
@@ -211,20 +212,5 @@ DELETE FROM [dbo].[Survey]
             };
         }
 
-        public static SurveyDto MapSurveyDto(dynamic row)
-        {
-            return new SurveyDto
-            {
-                Id = row.Id,
-                Description = row.Description,
-                Category = row.Category,
-                Deleted = row.Deleted,
-                InsertedDate = row.InsertedDate,
-                InsertedBy = row.InsertedBy,
-                UpdatedDate = row.UpdatedDate,
-                UpdatedBy = row.UpdatedBy,
-                UpdateCount = row.UpdateCount,
-            };
-        }
     }
 }

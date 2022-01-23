@@ -1,0 +1,60 @@
+﻿@using Survey.Shared.Models
+
+@if (Data != null)
+{
+    <div class="border-1 rounded-2">
+        <DataGrid TItem="QuestionDto" Data="@Data" Sortable="true" Filterable="false" Editable="false" @bind-SelectedRow="@SelectedItem" Hoverable="true">
+            <ChildContent>
+                <DataGridColumn TItem="QuestionDto" Field="@nameof(QuestionDto.Id)" Caption="Id" />
+                <DataGridColumn TItem="QuestionDto" Field="@nameof(QuestionDto.SurveyId)" Caption="UndersøkelseId" />
+                <DataGridColumn TItem="QuestionDto" Field="@nameof(QuestionDto.Text)" Caption="Tekst" />
+                <DataGridColumn TItem="QuestionDto" Field="@nameof(QuestionDto.Deleted)" Caption="Slettet" />
+                
+                <DataGridColumn TItem="QuestionDto" Field="@nameof(QuestionDto.Id)" Caption="Action">
+                    <DisplayTemplate>
+                        @*<Button class="btn btn-sm btn-info" @onclick="@(async (e) => await EditMedication(e, context))">Edit</Button>*@
+                        <div class="btn-toolbar flex-nowrap">
+                            <button type="button" class="btn btn-outline" @onclick=@(async (e) => await Edit(e, context))>
+                                <span class="oi oi-pencil"></span>
+                            </button>
+                            <button type="button" class="btn btn-outline" @onclick=@(async (e) => await Delete(e, context))>
+                                <span class="oi oi-trash"></span>
+                            </button>
+                        </div>
+                    </DisplayTemplate>
+                </DataGridColumn>
+            </ChildContent>
+            <LoadingTemplate>
+                <div class="box">
+                    <progress class="progress is-small is-primary" max="100" />
+                </div>
+            </LoadingTemplate>
+        </DataGrid>
+
+    </div>
+}
+
+@code {
+
+    [Inject] private IMessageService MessageService { get; set; }
+
+    [Parameter] public IEnumerable<QuestionDto> Data { get; set; }
+    [Parameter] public EventCallback<string> OnDelete { get; set; }
+    [Parameter] public EventCallback<string> OnEdit { get; set; }
+
+    private QuestionDto SelectedItem { get; set; }
+
+    private async Task Edit(MouseEventArgs e, QuestionDto m)
+    {
+        await OnEdit.InvokeAsync(m.Id);
+    }
+
+    private async Task Delete(MouseEventArgs e, QuestionDto m)
+    {
+        if (await MessageService.Confirm($"Slette spørsmål?", $"Er du sikker på du vil slette spørsmålet {m.Text}?"))
+        {
+            await OnDelete.InvokeAsync(m.Id);
+        }
+    }
+
+}

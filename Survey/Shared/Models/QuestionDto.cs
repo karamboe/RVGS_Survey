@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Survey.Shared
+﻿namespace Survey.Shared.Models
 {
     public class QuestionDto
     {
@@ -14,5 +8,7 @@ namespace Survey.Shared
         public bool IsMultipleChoise { get; set; }
         public bool Deleted { get; set; }
         public int UpdateCount { get; set; }
+
+        //public IEnumerable<AlternativeDto> Alternatives { get; set; }
     }
 }

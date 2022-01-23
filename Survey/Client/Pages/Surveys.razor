@@ -18,15 +18,54 @@ else
     <div>
         @if (!showEdit)
         {
-            <Survey.Client.Components.SurveyList Data="surveys" OnEdit="OnEdit" OnDelete="OnDelete" />
-            <Button Clicked="@OnAdd" Color="Color.Primary">Legg til</Button>
+            <Survey.Client.Components.SurveyList Data="surveys" OnEdit="OnEditSurvey" OnDelete="OnDeleteSurvey" />
+            <Button Clicked="@OnAddSurvey" Color="Color.Primary">Legg til</Button>
         }
         else
         {
             <Jumbotron Class="container" Margin="Margin.Is4.FromBottom">
                 <JumbotronTitle Size="JumbotronTitleSize.Is4">@editHeader</JumbotronTitle>
                 <Divider></Divider>
-                <Survey.Client.Components.SurveyEdit Model="@selectedSurvey" OnSave="@OnSave" OnCancel="OnCancel" />
+                <Survey.Client.Components.SurveyEdit Model="@selectedSurvey" OnSave="@OnSaveSurvey" OnCancel="OnCancelSurvey" />
+                <Survey.Client.Components.QuestionList Data="@questions" OnEdit="OnEditQuestion" OnDelete="OnDeleteQuestion" />
+                <Button Clicked="@OnAddQuestion" Color="Color.Primary">Nytt spørsmål</Button>
+
+                @if (showEditQuestion)
+                {
+                    <Modal @bind-Visible="@showEditQuestion">
+                        <ModalContent Centered="true" Size="ModalSize.Large">
+                            <ModalHeader>
+                                <ModalTitle>Endre spørsmål</ModalTitle>
+                                <CloseButton />
+                            </ModalHeader>
+                            <ModalBody>
+                                <Field>
+                                    <FieldLabel>Text:</FieldLabel>
+                                    <TextEdit Placeholder="Spørsmålstekst..." @bind-Text="@selectedQuestion.Text" />
+                                </Field>
+                                <Field>
+                                    <FieldLabel>Alternativ:</FieldLabel>
+                                    <Survey.Client.Components.AlternativeList Data="@alternatives" OnDelete="OnDeleteAlternative" />
+                                </Field>
+
+                                @if (!string.IsNullOrWhiteSpace(selectedQuestion.Id))
+                                {
+                                    <Button Clicked="@OnAddAlternative" Color="Color.Primary">Nytt alternativ</Button>
+
+                                    @if (showAlternativeDetails)
+                                    {
+                                        <Survey.Client.Components.AlternativeDetails Model="@selectedAlternative" OnSave="OnSaveAlternative" OnCancel="OnCancelAlternative" />
+                                    }
+                                }
+
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button Color="Color.Secondary" Clicked="@OnCloseQuestion">Lukk</Button>
+                                <Button Color="Color.Primary" Clicked="@OnSaveQuestion">Lagre</Button>
+                            </ModalFooter>
+                        </ModalContent>
+                    </Modal>
+                }
             </Jumbotron>
         }
     </div>
@@ -36,12 +75,20 @@ else
 {
     private bool isInitialized;
     private bool showEdit;
+    private bool showEditQuestion;
+    private bool showAlternativeDetails;
     private string editHeader;
 
     private IEnumerable<SurveyDto> surveys;
-    private SurveyDto selectedSurvey { get; set; }
+    private IEnumerable<QuestionDto> questions;
+    private IEnumerable<AlternativeDto> alternatives;
 
-    [Inject] private ISurveyService DataService { get; set; }
+    private SurveyDto selectedSurvey { get; set; }
+    private QuestionDto selectedQuestion { get; set; }
+    private AlternativeDto selectedAlternative { get; set; }
+
+    [Inject] private ISurveyService SurveyService { get; set; }
+    [Inject] private IQuestionService QuestionService { get; set; }
     [Inject] private INotificationService NotificationService { get; set; }
     [Inject] private IMessageService MessageService { get; set; }
 
@@ -51,19 +98,20 @@ else
         isInitialized = true;
     }
 
+    #region Survey
     private async Task ListSurveys()
     {
         try
         {
-            surveys = await DataService.List();            
-        }        
+            surveys = await SurveyService.List();
+        }
         catch (Exception ex)
         {
             await MessageService.Error($"Feil ved henting av undersøkelser: {ex?.Message}");
         }
     }
 
-    private void OnAdd()
+    private void OnAddSurvey()
     {
         editHeader = "Ny undersøkelse";
         //selectedSurvey = new SurveyDto();
@@ -73,25 +121,29 @@ else
                 Description = "",
                 Category = "",
                 Deleted = false,
-                InsertedDate = DateTime.MinValue,
+                InsertedDate = DateTime.Now.Date,
                 InsertedBy = "",
                 UpdatedDate = DateTime.MinValue,
                 UpdatedBy = "",
                 UpdateCount = 0
             };
+
+        questions = null;
+        alternatives = null;
         showEdit = true;
     }
 
-    private async Task OnEdit(string id)
+    private async Task OnEditSurvey(string id)
     {
         editHeader = "Endre undersøksel";
-        selectedSurvey = await DataService.GetById(id);
+        selectedSurvey = await SurveyService.GetById(id);
+        await ListQuestions();
         showEdit = true;
     }
 
-    private async Task OnDelete(string id)
+    private async Task OnDeleteSurvey(string id)
     {
-        if (await DataService.Delete(id))
+        if (await SurveyService.Delete(id))
         {
             await NotificationService.Success("Undersøkelsen ble vellykket slettet!", "Sletting gikk fint!");
             showEdit = false;
@@ -105,10 +157,10 @@ else
         }
     }
 
-    private async Task OnSave()
+    private async Task OnSaveSurvey()
     {
         selectedSurvey.UpdatedBy = "KBO";
-        if (await DataService.Save(selectedSurvey))
+        if (await SurveyService.Save(selectedSurvey))
         {
             await NotificationService.Success("Undersøkelsen ble vellykket lagert!", "Lagring gikk fint!");
 
@@ -122,9 +174,138 @@ else
         }
     }
 
-    private void OnCancel()
+    private void OnCancelSurvey()
     {
         showEdit = false;
     }
+    #endregion
+
+    #region Question
+
+    private void OnAddQuestion()
+    {
+        selectedQuestion = new QuestionDto
+            {
+                Id = "",
+                SurveyId = selectedSurvey.Id,
+                Text = "",
+                IsMultipleChoise = false,
+                Deleted = false,
+                UpdateCount = 0
+            };
+        alternatives = null;
+        showEditQuestion = true;
+    }
+
+    private async Task OnCloseQuestion()
+    {
+        showEditQuestion = false;
+        await ListQuestions();
+    }
+
+    private async Task OnEditQuestion(string id)
+    {
+        selectedQuestion = await QuestionService.GetQuestionById(id);
+        alternatives = await QuestionService.ListAlternatives(id);
+        showEditQuestion = true;
+    }
+
+    private async Task OnSaveQuestion()
+    {
+        var res = await QuestionService.SaveQuestion(selectedQuestion);
+        if (res != null)
+        {
+            selectedQuestion = res;
+            await NotificationService.Success("Spørsmål ble vellykket lagert!", "Lagring gikk fint!");
+            await ListQuestions();
+        }
+        else
+        {
+            await MessageService.Error("Kunne ikke lagre undersøkelse!", "Feil ved lagring av undersøkelse");
+        }
+    }
+
+    private async Task OnDeleteQuestion(string id)
+    {
+        if (await QuestionService.DeleteQuestion(id))
+        {
+            await NotificationService.Success("Undersøkelsen ble vellykket slettet!", "Sletting gikk fint!");
+            selectedQuestion = null;
+            await ListQuestions();
+        }
+        else
+        {
+            await MessageService.Error("Kunne ikke slette undersøkelse!", "Feil ved sletting av undersøkelse");
+        }
+    }
+
+    private async Task ListQuestions()
+    {
+        questions = await QuestionService.ListQuestions(selectedSurvey.Id);
+    }
+
+
+
+    #endregion
+
+    #region Alternatives
+
+    private void OnAddAlternative()
+    {
+        selectedAlternative = new AlternativeDto
+            {
+                Id = "",
+                SurveyId = selectedQuestion.SurveyId,
+                QuestionId = selectedQuestion.Id,
+                Text = "",
+                IsCorrect = false,
+                UpdateCount = 0
+            };
+        showAlternativeDetails = true;
+    }
+
+    private async Task OnSaveAlternative()
+    {
+        if (await QuestionService.SaveAlternative(selectedAlternative))
+        {
+            await NotificationService.Success("Alternativ ble vellykket lagert!", "Lagring gikk fint!");
+            showAlternativeDetails = false;
+            selectedAlternative = null;
+            await ListAlternatives();
+        }
+        else
+        {
+            await MessageService.Error("Kunne ikke lagre alternativ!", "Feil ved lagring av alternativ");
+        }
+    }
+
+    private void OnCancelAlternative()
+    {
+        selectedAlternative = null;
+        showAlternativeDetails = false;
+    }
+
+    private async Task ListAlternatives()
+    {
+        alternatives = await QuestionService.ListAlternatives(selectedQuestion.Id);
+    }
+
+    private async Task OnDeleteAlternative(string id)
+    {
+        if (await QuestionService.DeleteAlternative(id))
+        {
+            await NotificationService.Success("Alternativet ble vellykket slettet!", "Sletting gikk fint!");
+            selectedQuestion = null;
+            await ListQuestions();
+        }
+        else
+        {
+            await MessageService.Error("Kunne ikke slette alternativet!", "Feil ved sletting av alternativ");
+        }
+    }
+
+    #endregion
+
+
 
 }
