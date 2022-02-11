@@ -7,11 +7,44 @@
 
 Welcome to your new app.
 
+<button class="btn">Min Knapp</button>
+
 <SurveyPrompt Title="How is Blazor working for you?" Message="Her kommer det en melding som skal vises i komponenten" />
 
+<Container Breakpoint="Breakpoint.Tablet">
+    <Alert Color="Color.Primary" Visible="true">
+        100% wide until tablet breakpoint
+    </Alert>
+</Container>
+<Container Breakpoint="Breakpoint.Desktop">
+    <Alert Color="Color.Primary" Visible="true">
+        100% wide until desktop breakpoint
+    </Alert>
+</Container>
+<Container Breakpoint="Breakpoint.Widescreen">
+    <Alert Color="Color.Primary" Visible="true">
+        100% wide until widescreen breakpoint
+    </Alert>
+</Container>
+<Container Breakpoint="Breakpoint.FullHD">
+    <Alert Color="Color.Primary" Visible="true">
+        100% wide until full-hd breakpoint
+    </Alert>
+</Container>
 
-<Button Color="Color.Primary" Clicked="@ShowMessage">Message</Button>
 
+<Row Gutter="(32, 16)">
+    <Column ColumnSize="ColumnSize.Is8">
+        <Alert Color="Color.Primary" Visible="true">
+            I have padding
+        </Alert>
+    </Column>
+    <Column ColumnSize="ColumnSize.Is4">
+        <Alert Color="Color.Secondary" Visible="true">
+            I also have padding
+        </Alert>
+    </Column>
+</Row>
 
 @code
 {

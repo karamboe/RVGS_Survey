@@ -17,5 +17,8 @@ namespace Survey.Client.Services
         Task<bool> SaveAlternative(AlternativeDto item);
 
         Task<bool> DeleteAlternative(string id);
+
+        Task<AnswerDto> GetAnswer(string questionId);
+        Task<AnswerDto> SaveAnswer(AnswerDto answer);
     }
 }

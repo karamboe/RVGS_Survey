@@ -94,5 +94,37 @@ namespace Survey.Client.Services
             }
             return false;
         }
+
+        public async Task<AnswerDto> GetAnswer(string questionId)
+        {
+            try
+            {
+                AnswerDto answer = null;
+                return await Task.FromResult(answer); //await httpClient.GetFromJsonAsync<AnswerDto>($"api/Answer/GetAnswer/{questionId}");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<AnswerDto> SaveAnswer(AnswerDto item)
+        {
+            AnswerDto ret = null;
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync<AnswerDto>($"api/Answer/SaveAnswer/{item}", item);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    ret = await response.Content.ReadFromJsonAsync<AnswerDto>();
+                }
+            }
+            catch
+            {
+                throw;
+            }
+            return ret;
+        }
     }
 }

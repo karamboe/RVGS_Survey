@@ -1,4 +1,7 @@
 ﻿@page "/surveys"
+@attribute [Authorize]
+
+
 @using Survey.Client.Services
 @using Survey.Shared.Models
 @inject HttpClient Http
@@ -27,9 +30,11 @@ else
                 <JumbotronTitle Size="JumbotronTitleSize.Is4">@editHeader</JumbotronTitle>
                 <Divider></Divider>
                 <Survey.Client.Components.SurveyEdit Model="@selectedSurvey" OnSave="@OnSaveSurvey" OnCancel="OnCancelSurvey" />
-                <Survey.Client.Components.QuestionList Data="@questions" OnEdit="OnEditQuestion" OnDelete="OnDeleteQuestion" />
-                <Button Clicked="@OnAddQuestion" Color="Color.Primary">Nytt spørsmål</Button>
-
+                @if (!string.IsNullOrWhiteSpace(selectedSurvey.Id))
+                {
+                    <Survey.Client.Components.QuestionList Data="@questions" OnEdit="OnEditQuestion" OnDelete="OnDeleteQuestion" />
+                    <Button Clicked="@OnAddQuestion" Color="Color.Primary">Nytt spørsmål</Button>
+                }
                 @if (showEditQuestion)
                 {
                     <Modal @bind-Visible="@showEditQuestion">
@@ -43,25 +48,32 @@ else
                                     <FieldLabel>Text:</FieldLabel>
                                     <TextEdit Placeholder="Spørsmålstekst..." @bind-Text="@selectedQuestion.Text" />
                                 </Field>
-                                <Field>
-                                    <FieldLabel>Alternativ:</FieldLabel>
-                                    <Survey.Client.Components.AlternativeList Data="@alternatives" OnDelete="OnDeleteAlternative" />
-                                </Field>
-
+                                <Button Color="Color.Primary" Clicked="@OnSaveQuestion">Lagre spørsmål</Button>
                                 @if (!string.IsNullOrWhiteSpace(selectedQuestion.Id))
                                 {
+                                    <Field>
+                                        <FieldLabel>Nytt alternativ:</FieldLabel>
+                                        <Survey.Client.Components.AlternativeDetails Model="@selectedAlternative" OnSave="OnSaveAlternative" OnCancel="OnCancelAlternative" />
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel>Alternativ:</FieldLabel>
+                                        <Survey.Client.Components.AlternativeList Data="@alternatives" OnDelete="OnDeleteAlternative" />
+                                    </Field>
+                                }
+                                @*@if (!string.IsNullOrWhiteSpace(selectedQuestion.Id))
+                                    {
                                     <Button Clicked="@OnAddAlternative" Color="Color.Primary">Nytt alternativ</Button>
 
                                     @if (showAlternativeDetails)
                                     {
-                                        <Survey.Client.Components.AlternativeDetails Model="@selectedAlternative" OnSave="OnSaveAlternative" OnCancel="OnCancelAlternative" />
+                                    <Survey.Client.Components.AlternativeDetails Model="@selectedAlternative" OnSave="OnSaveAlternative" OnCancel="OnCancelAlternative" />
                                     }
-                                }
+                                    }*@
 
                             </ModalBody>
                             <ModalFooter>
                                 <Button Color="Color.Secondary" Clicked="@OnCloseQuestion">Lukk</Button>
-                                <Button Color="Color.Primary" Clicked="@OnSaveQuestion">Lagre</Button>
+                                @*<Button Color="Color.Primary" Clicked="@OnSaveQuestion">Lagre</Button>*@
                             </ModalFooter>
                         </ModalContent>
                     </Modal>
@@ -208,6 +220,15 @@ else
         selectedQuestion = await QuestionService.GetQuestionById(id);
         alternatives = await QuestionService.ListAlternatives(id);
         showEditQuestion = true;
+        selectedAlternative = new AlternativeDto
+            {
+                Id = "",
+                SurveyId = selectedQuestion.SurveyId,
+                QuestionId = selectedQuestion.Id,
+                Text = "",
+                IsCorrect = false,
+                UpdateCount = 0
+            };
     }
 
     private async Task OnSaveQuestion()
@@ -288,6 +309,15 @@ else
     private async Task ListAlternatives()
     {
         alternatives = await QuestionService.ListAlternatives(selectedQuestion.Id);
+        selectedAlternative = new AlternativeDto
+            {
+                Id = "",
+                SurveyId = selectedQuestion.SurveyId,
+                QuestionId = selectedQuestion.Id,
+                Text = "",
+                IsCorrect = false,
+                UpdateCount = 0
+            };
     }
 
     private async Task OnDeleteAlternative(string id)

@@ -1,0 +1,154 @@
+﻿@page "/answer"
+@attribute [Authorize]
+
+
+@using Survey.Client.Services
+@using Survey.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Surveys</PageTitle>
+
+<h1>Undersøkelser</h1>
+
+<p>Her er undersøkelser som du kan se og svar på</p>
+
+@if (!isInitialized)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+        @if (!started)
+        {
+            <Survey.Client.Components.AnswerSurveyList Data="surveys" OnAnswer="OnAnswerSurvey" />
+        }
+        else
+        {
+            <Jumbotron Class="container" Margin="Margin.Is4.FromBottom">
+                <JumbotronTitle Size="JumbotronTitleSize.Is4">Besvar undersøkelse</JumbotronTitle>
+                <Divider></Divider>
+                <p>@selectedQuestion.Text</p>
+
+                <Survey.Client.Components.AnswerAlternativesList Data="currentAnswer.AlternativeAnswers" OnOk="OnNext" RequireCorrectAnswerToContinue="true" IsMultipleChoise="selectedQuestion.IsMultipleChoise" />
+
+                <Divider></Divider>
+                <Button Color="Color.Danger" Clicked="@OnCancel">Avbryt</Button>
+            </Jumbotron>
+        }
+    </div>
+}
+
+@code
+{
+    private bool isInitialized;
+    private bool started;
+    private int questionIndex = 0;
+
+    private IEnumerable<SurveyDto> surveys;
+    private List<QuestionDto> questions;
+    private List<AlternativeDto> alternatives;
+
+    private SurveyDto selectedSurvey { get; set; }
+    private QuestionDto selectedQuestion { get; set; }
+    private AlternativeDto selectedAlternative { get; set; }
+    public AnswerDto currentAnswer { get; set; }
+
+    [Inject] private ISurveyService SurveyService { get; set; }
+    [Inject] private IQuestionService QuestionService { get; set; }
+    [Inject] private INotificationService NotificationService { get; set; }
+    [Inject] private IMessageService MessageService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ListSurveys();
+        isInitialized = true;
+    }
+
+    #region Survey
+    private async Task ListSurveys()
+    {
+        try
+        {
+            surveys = await SurveyService.List();
+        }
+        catch (Exception ex)
+        {
+            await MessageService.Error($"Feil ved henting av undersøkelser: {ex?.Message}");
+        }
+    }
+
+    private async Task OnAnswerSurvey(string id)
+    {
+        selectedSurvey = await SurveyService.GetById(id);
+        questions = (await QuestionService.ListQuestions(id)).ToList();
+        selectedQuestion = questions.First();
+        questionIndex = 0;
+        alternatives = (await QuestionService.ListAlternatives(selectedQuestion.Id)).ToList();
+
+        await GetAnswer();
+
+        started = true;
+    }
+
+    private async Task GetAnswer()
+    {
+        currentAnswer = await QuestionService.GetAnswer(selectedQuestion.Id);
+
+        if (currentAnswer == null)
+        {
+            currentAnswer = new AnswerDto
+                {
+                    SurveyId = selectedSurvey.Id,
+                    QuestionId = selectedQuestion.Id,
+                    QuestionText = selectedQuestion.Text,
+                    AlternativeAnswers = alternatives.Select(s => new AnswerAlternativeDto
+                    {
+                        AlternativeId = s.Id,
+                        IsCorrect = s.IsCorrect,
+                        AlternativeText = s.Text
+                    }).ToList()
+                };
+        }
+    }
+
+    private async Task OnNext(IEnumerable<AnswerAlternativeDto> altAnswers)
+    {
+        if (altAnswers.Any(s => s.IsSelected))
+        {
+            //Save altAnswers
+
+            //Next question
+            questionIndex++;
+            if (questionIndex < (questions.Count))
+            {
+                selectedQuestion = questions[questionIndex];
+                alternatives = (await QuestionService.ListAlternatives(selectedQuestion.Id)).ToList();
+                await GetAnswer();
+            }
+            else
+            {
+                await MessageService.Info("Takk for at du deltok!");
+                await OnCancel();
+            }
+        }
+        else
+        {
+            await MessageService.Error("Du må velge et svar for å gå videre!", "Ingen svar valgt!");
+        }
+    }
+
+    private async Task OnCancel()
+    {
+        selectedSurvey = null;
+        started = false;
+        await ListSurveys();
+    }
+
+    #endregion
+
+
+
+
+
+}

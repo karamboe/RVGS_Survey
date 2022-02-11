@@ -16,12 +16,12 @@
             <Field ColumnSize="ColumnSize.IsAuto" Class="align-bottom">
                 <br />
                 @*<Button Color="Color.Success" Type="ButtonType.Submit" Disabled="@(!context.Validate())" Class="align-bottom">@localizer["Save"]</Button>*@
-                <Button Color="Color.Success" Type="ButtonType.Submit" Class="align-bottom">Lagre</Button>
+                <Button Color="Color.Success" Type="ButtonType.Submit" Class="align-bottom">Legg til</Button>
             </Field>
-            <Field ColumnSize="ColumnSize.IsAuto" Class="align-bottom">
+            @*<Field ColumnSize="ColumnSize.IsAuto" Class="align-bottom">
                 <br />
                 <Button Type="ButtonType.Button" Color="Color.Light" Clicked="OnCancel">Avbryt</Button>
-            </Field>
+            </Field>*@
         </Fields>
         <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
     </EditForm>

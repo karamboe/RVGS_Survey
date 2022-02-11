@@ -1,0 +1,17 @@
+﻿@page "/account/logout"
+
+@using Survey.Client.Services
+
+
+@layout MainLayout
+@inject IUserContextService userContextService
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await userContextService.Logout();        
+        NavigationManager.NavigateTo("/"); 
+    }
+
+}

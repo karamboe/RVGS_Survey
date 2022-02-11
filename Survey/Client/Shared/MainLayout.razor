@@ -1,9 +1,12 @@
 ﻿@using Blazorise.Components
+@using Survey.Client.Contract
 @inherits LayoutComponentBase
+
+@inject IUserContext userContext
 
 <Layout>
     <LayoutHeader>
-        <NavMenu />
+        <NavMenu IsLoggedIn="userContext.IsAuthenticated" IsAdmin="userContext.IsAdmin" />
     </LayoutHeader>
     <LayoutContent>
         @Body

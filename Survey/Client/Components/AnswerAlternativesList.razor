@@ -1,0 +1,90 @@
+﻿@using Survey.Shared.Models
+
+@if (Data != null)
+{
+    @if (IsMultipleChoise)
+    {
+        foreach (var item in Data)
+        {
+            <Check TValue="bool" @bind-Checked="item.IsSelected">@item.AlternativeText</Check>
+        }
+    }
+    else
+    {
+        <RadioGroup TValue="string" Name="colors" @bind-CheckedValue="@checkedValue">
+            @foreach (var item in Data)
+            {
+                <Radio TValue="string" Value="@item.AlternativeId">@item.AlternativeText</Radio>
+            }
+        </RadioGroup>
+    }
+}
+
+<Button Color="Color.Primary" Clicked="@OnNext">Neste</Button>
+
+@code {
+
+    [Inject] private IMessageService MessageService { get; set; }
+
+    [Parameter] public IEnumerable<AnswerAlternativeDto> Data { get; set; }
+    [Parameter] public bool IsMultipleChoise { get; set; }
+    [Parameter] public bool RequireCorrectAnswerToContinue { get; set; }
+    [Parameter] public EventCallback<IEnumerable<AnswerAlternativeDto>> OnOk { get; set; }
+
+    string checkedValue;
+
+    private async Task OnNext()
+    {
+        if (IsMultipleChoise)
+        {
+            if (!Data.Any(s => s.IsSelected))
+            {
+                await MessageService.Error("Du må velge et svar for å gå videre!", "Ingen svar valgt!");
+            }
+        }
+        else
+        {
+            if (!string.IsNullOrWhiteSpace(checkedValue))
+            {                
+                Data.Apply(s => s.IsSelected = false);
+                Data.First(s => s.AlternativeId == checkedValue).IsSelected = true;                
+            }
+            else
+            {
+                await MessageService.Error("Du må velge et svar for å gå videre!", "Ingen svar valgt!");
+            }
+        }
+
+        //Check if errros
+        if (RequireCorrectAnswerToContinue)
+        {
+            if (HasErrors() == false)
+            {
+                if (await MessageService.Confirm("Du svarte riktig. Vil du gå videre?", "Riktig svar!"))
+                {
+                    await OnOk.InvokeAsync(Data);
+                }
+            }
+            else
+            {
+                await MessageService.Warning("Du har svart feil! Prøv igjen");
+                checkedValue = string.Empty;
+            }
+        }
+        else
+        {
+            await OnOk.InvokeAsync(Data);
+        }
+    }
+
+    private bool HasErrors()
+    {
+        var res = Data.Where(s => s.IsSelected != s.IsCorrect)?.ToList();
+
+        if (res != null && res.Count > 0)
+        {
+            return true;
+        }
+        return false;
+    }
+}

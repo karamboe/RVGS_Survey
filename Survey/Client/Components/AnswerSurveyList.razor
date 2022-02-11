@@ -1,0 +1,45 @@
+﻿@using Survey.Client.Contract
+@using Survey.Shared.Models
+
+@if (Data != null)
+{
+    <div class="border-1 rounded-2">
+        <DataGrid TItem="SurveyDto" Data="@Data" Sortable="true" Filterable="false" Editable="false" @bind-SelectedRow="@SelectedItem" Hoverable="true">
+            <ChildContent>
+                <DataGridColumn TItem="SurveyDto" Field="@nameof(SurveyDto.Id)" Caption="Id" />
+                <DataGridColumn TItem="SurveyDto" Field="@nameof(SurveyDto.Description)" Caption="Beskrivelse" />
+                
+                <DataGridColumn TItem="SurveyDto" Field="@nameof(SurveyDto.Id)" Caption="Action">
+                    <DisplayTemplate>
+                        @*<Button class="btn btn-sm btn-info" @onclick="@(async (e) => await EditMedication(e, context))">Edit</Button>*@
+                        <div class="btn-toolbar flex-nowrap">
+                            <button type="button" class="btn btn-primary bg-primary" @onclick=@(async (e) => await Answer(e, context))>Start</button>
+                        </div>
+                    </DisplayTemplate>
+                </DataGridColumn>
+            </ChildContent>
+            <LoadingTemplate>
+                <div class="box">
+                    <progress class="progress is-small is-primary" max="100" />
+                </div>
+            </LoadingTemplate>
+        </DataGrid>
+
+    </div>
+}
+
+@code
+{
+    [Inject] private IMessageService MessageService { get; set; }
+    [Inject] private IUserContext UserContext { get; set; }
+
+    [Parameter] public IEnumerable<SurveyDto> Data { get; set; }
+    [Parameter] public EventCallback<string> OnAnswer { get; set; }
+
+    private SurveyDto SelectedItem { get; set; }
+
+    private async Task Answer(MouseEventArgs e, SurveyDto m)
+    {
+        await OnAnswer.InvokeAsync(m.Id);
+    }
+}

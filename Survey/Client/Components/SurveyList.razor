@@ -1,37 +1,8 @@
-﻿@using Survey.Shared.Models
+﻿@using Survey.Client.Contract
+@using Survey.Shared.Models
 
 @if (Data != null)
 {
-    @*<table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Beskrivelse</th>
-                <th>Kategori</th>
-                <th>Slettet</th>
-                <th>Lagt til</th>
-                <th>Lagt til av</th>
-                <th>Oppdatert</th>
-                <th>Oppdatert av</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var i in Data)
-            {
-                <tr>
-                    <td>@i.Id</td>
-                    <td>@i.Description</td>
-                    <td>@i.Category</td>
-                    <td>@i.Deleted</td>
-                    <td>@i.InsertedDate</td>
-                    <td>@i.InsertedBy</td>
-                    <td>@i.UpdatedDate</td>
-                    <td>@i.UpdatedBy</td>
-                </tr>
-            }
-        </tbody>
-    </table>*@
-
     <div class="border-1 rounded-2">
         <DataGrid TItem="SurveyDto" Data="@Data" Sortable="true" Filterable="false" Editable="false" @bind-SelectedRow="@SelectedItem" Hoverable="true">
             <ChildContent>
@@ -42,17 +13,21 @@
                 <DataGridColumn TItem="SurveyDto" Field="@nameof(SurveyDto.InsertedBy)" Caption="Laget av" />
                 <DataGridColumn TItem="SurveyDto" Field="@nameof(SurveyDto.UpdatedDate)" DisplayFormat="{0:dd.MM.yyyy}" Caption="Oppdatert" />
                 <DataGridColumn TItem="SurveyDto" Field="@nameof(SurveyDto.UpdatedBy)" Caption="Oppdatert av" />
-                
+
                 <DataGridColumn TItem="SurveyDto" Field="@nameof(SurveyDto.Id)" Caption="Action">
                     <DisplayTemplate>
                         @*<Button class="btn btn-sm btn-info" @onclick="@(async (e) => await EditMedication(e, context))">Edit</Button>*@
                         <div class="btn-toolbar flex-nowrap">
-                            <button type="button" class="btn btn-outline" @onclick=@(async (e) => await Edit(e, context))>
-                                <span class="oi oi-pencil"></span>
-                            </button>
-                            <button type="button" class="btn btn-outline" @onclick=@(async (e) => await Delete(e, context))>
-                                <span class="oi oi-trash"></span>
-                            </button>
+                            @if (UserContext.IsAdmin)
+                            {
+                                <button type="button" class="btn btn-outline" @onclick=@(async (e) => await Edit(e, context))>
+                                    <span class="oi oi-pencil"></span>
+                                </button>
+
+                                <button type="button" class="btn btn-outline" @onclick=@(async (e) => await Delete(e, context))>
+                                    <span class="oi oi-trash"></span>
+                                </button>
+                            }
                         </div>
                     </DisplayTemplate>
                 </DataGridColumn>
@@ -70,6 +45,7 @@
 @code
 {
     [Inject] private IMessageService MessageService { get; set; }
+    [Inject] private IUserContext UserContext { get; set; }
 
     [Parameter] public IEnumerable<SurveyDto> Data { get; set; }
     [Parameter] public EventCallback<string> OnDelete { get; set; }
