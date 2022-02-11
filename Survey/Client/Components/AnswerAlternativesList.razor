@@ -33,6 +33,12 @@
 
     string checkedValue;
 
+    protected override Task OnParametersSetAsync()
+    {
+        checkedValue = string.Empty;
+        return base.OnParametersSetAsync();
+    }
+
     private async Task OnNext()
     {
         if (IsMultipleChoise)
@@ -47,7 +53,7 @@
             if (!string.IsNullOrWhiteSpace(checkedValue))
             {                
                 Data.Apply(s => s.IsSelected = false);
-                Data.First(s => s.AlternativeId == checkedValue).IsSelected = true;                
+                Data.First(s => s.AlternativeId == checkedValue).IsSelected = true;
             }
             else
             {
@@ -67,8 +73,7 @@
             }
             else
             {
-                await MessageService.Warning("Du har svart feil! Prøv igjen");
-                checkedValue = string.Empty;
+                await MessageService.Warning("Du har svart feil! Prøv igjen");                
             }
         }
         else
